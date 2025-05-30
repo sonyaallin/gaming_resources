@@ -11,7 +11,7 @@ import java.util.Random;
 import javax.swing.*;
 import java.io.IOException;
 
-public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListener, IODeviceEventListener {
+public class SpaceInvaderGame extends JPanel implements ActionListener, IODeviceEventListener {
 
     //board
     int tileSize = 32;
@@ -77,9 +77,6 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
         setFocusable(true);
-//        addKeyListener(this);
-
-        //load images
         shipImg = new ImageIcon(getClass().getResource("./ship.png")).getImage();
         alienImg = new ImageIcon(getClass().getResource("./alien.png")).getImage();
         alienCyanImg = new ImageIcon(getClass().getResource("./alien-cyan.png")).getImage();
@@ -300,41 +297,6 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {}
-
-    @Override
-    public void keyTyped(KeyEvent e) {}
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if (gameOver) { //any key to restart
-            ship.x = shipX;
-            bulletArray.clear();
-            alienArray.clear();
-            gameOver = false;
-            score = 0;
-            alienColumns = 1;
-            alienRows = 1;
-            alienVelocityX = 1;
-            createAliens();
-            gameLoop.start();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_LEFT  && ship.x - shipVelocityX >= 0) {
-            ship.x -= shipVelocityX; //move left one tile
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_RIGHT  && ship.x + shipVelocityX + ship.width <= boardWidth) {
-            ship.x += shipVelocityX; //move right one tile
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            //shoot bullet
-            soundModule.playBulletSound();
-            Block bullet = new Block(ship.x + shipWidth*15/32, ship.y, bulletWidth, bulletHeight, null);
-            bulletArray.add(bullet);
-        }
-
-    }
-
-    @Override
     public void onStart(IOEvent ioEvent) {
 
     }
@@ -363,10 +325,23 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
             // 4. Assign the mapped value to paddlePosition
             ship.x = mappedValue;
         } else if (ioEvent.getPin().getIndex() == THEBUT) {
-            //shoot bullet
-            soundModule.playBulletSound();
-            Block bullet = new Block(ship.x + shipWidth*15/32, ship.y, bulletWidth, bulletHeight, null);
-            bulletArray.add(bullet);
+            if (gameOver) { //any key to restart
+                ship.x = shipX;
+                bulletArray.clear();
+                alienArray.clear();
+                gameOver = false;
+                score = 0;
+                alienColumns = 1;
+                alienRows = 1;
+                alienVelocityX = 1;
+                createAliens();
+                gameLoop.start();
+            } else {
+                //shoot bullet
+                soundModule.playBulletSound();
+                Block bullet = new Block(ship.x + shipWidth * 15 / 32, ship.y, bulletWidth, bulletHeight, null);
+                bulletArray.add(bullet);
+            }
         }
     }
 
