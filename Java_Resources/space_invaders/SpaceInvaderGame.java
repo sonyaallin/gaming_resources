@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.io.IOException;
 
 public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListener, IODeviceEventListener {
+
     //board
     int tileSize = 32;
     int rows = 16;
@@ -28,6 +29,9 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
 
     //SOUND
     SoundModule soundModule;
+
+    //HAPTICS
+    VibrationModule vibrationModule;
 
     //ship
     int shipWidth = tileSize*2;
@@ -73,7 +77,7 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
         setFocusable(true);
-        addKeyListener(this);
+//        addKeyListener(this);
 
         //load images
         shipImg = new ImageIcon(getClass().getResource("./ship.png")).getImage();
@@ -95,6 +99,9 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
         //sounds
         soundModule = new SoundModule();
         soundModule.playShipSound();
+
+        //vibrations
+        vibrationModule= new VibrationModule(myGroveBoard);
 
         //listen for arduino events
         this.myGroveBoard.addEventListener(this);
@@ -208,6 +215,8 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
 
                 float[] pos1 = {x, y, refDistance}; // offset z to avoid artifacts
                 soundModule.playShipSound(pos1);
+                vibrationModule.setvibrationInterval((long)((x2-x1)* vibrationModule.maxInterval));
+                vibrationModule.vibrate();
 
                 if (alien.y >= ship.y) {
                     gameOver = true;
@@ -321,8 +330,8 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
             soundModule.playBulletSound();
             Block bullet = new Block(ship.x + shipWidth*15/32, ship.y, bulletWidth, bulletHeight, null);
             bulletArray.add(bullet);
-
         }
+
     }
 
     @Override
@@ -337,7 +346,7 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
 
     @Override
     public void onPinChange(IOEvent ioEvent) {
-        System.out.println("Pin change event: " + ioEvent.getPin().getIndex() + " value: " + ioEvent.getPin().getValue());
+//        System.out.println("Pin change event: " + ioEvent.getPin().getIndex() + " value: " + ioEvent.getPin().getValue());
 
         // 1. Check if the event is from the potentiometer pin
         if (ioEvent.getPin().getIndex() != THEPOT && ioEvent.getPin().getIndex() != THEBUT) {
@@ -349,7 +358,7 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, KeyListe
             long potValue = ioEvent.getPin().getValue();
 
             // 3. Map the value from 0-1023 to 0-WINDOW_HEIGHT
-            int mappedValue = (int) (potValue * boardWidth / 1023.0);
+            int mappedValue = (int) (potValue * (boardWidth - shipWidth) / 1023.0);
 
             // 4. Assign the mapped value to paddlePosition
             ship.x = mappedValue;
