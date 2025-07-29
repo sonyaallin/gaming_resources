@@ -1,0 +1,55 @@
+1
+Beginning
+You awaken in a dimly lit stone corridor with three paths before you.
+-----
+-WEST
+The Library of Whispers
+-EAST\KEY
+The Chamber of Echoes
+-SOUTH\MIRROR
+The Vault of Truth
+
+2
+The Library of Whispers
+You step into a dust-covered library. Scrolls float gently in the air.
+A tall woman with glowing eyes smiles at you.
+-Elandra:
+Knowledge opens all doors. Seek the key, but listen to the silence between words.
+-----
+-LOOK
+You find a Silver Key hidden in a hollowed-out book titled Echoes of the Vault.
+-Elandra:
+You’ll need more than a key. Find what reflects truth in echoes.
+-WEST\KEY
+3
+
+3
+The Chamber of Echoes
+The walls hum with your footsteps. A voice answers before you speak.
+-Thorn:
+Not all that is heard is true... but what is reflected cannot lie.
+-----
+-WEST\MIRROR
+4
+-LOOK
+You discover a Mirror Shard embedded in a cracked wall.
+
+4
+The Vault of Truth
+A Stone Tablet sits on a pedestal with three dials: Whisper, Echo, Truth. An old dwarf with granite skin stands before it.
+-Gorrin:
+Got the key? Got the shard? Got the code? Then solve the puzzle, or be sealed forever.
+-----
+-LOOK
+You discover a piece of paper with an obscure code written on it.
+WEST\CODE
+5
+
+5
+The End
+The tablet glows. The pedestal sinks. A hidden door opens to daylight.
+-Gorrin:
+Well done, traveler. You’ve passed the trial of mind and soul. Freedom is yours.
+You emerge into the sunlit world, puzzle solved, truth found... and adventure calling again.
+-----
+FORCED     0

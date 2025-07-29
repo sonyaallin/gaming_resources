@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SpaceInvaderGame extends JPanel implements ActionListener, IODeviceEventListener {
 
@@ -21,7 +22,7 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
     int boardWidth = tileSize * columns; // 32 * 16
     int boardHeight = tileSize * rows; // 32 * 16
 
-    float maxDistanceX = 40.0f;
+    float maxDistanceX = 10.0f;
     float refDistance = 1.f;
     Image shipImg, alienImg, alienCyanImg, alienMagentaImg, alienYellowImg;
 
@@ -38,7 +39,6 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
     int shipHeight = tileSize;
     int shipX = tileSize * columns/2 - tileSize;
     int shipY = tileSize * rows - tileSize*2;
-    int shipVelocityX = tileSize; //ship moving speed
     Block ship;
 
     //aliens
@@ -69,6 +69,8 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
     private final int THEBUT = 6;
     private Pin thePot;
     private Pin theBut;
+    private final AtomicBoolean isVibrating = new AtomicBoolean(false);
+
 
     SpaceInvaderGame() {
 
@@ -95,7 +97,6 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
 
         //sounds
         soundModule = new SoundModule();
-        soundModule.playShipSound();
 
         //vibrations
         vibrationModule= new VibrationModule(myGroveBoard);
@@ -104,9 +105,29 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
         this.myGroveBoard.addEventListener(this);
 
         //game timer
-        gameLoop = new Timer(1000/60, this); //1000/60 = 16.6
+        gameLoop = new Timer(1000/60, this);
         createAliens();
         gameLoop.start();
+    }
+
+    public void vibrateOnce(long intervalMs) {
+        if (isVibrating.get()) {
+            // Already vibrating; ignore this call
+            return;
+        }
+
+        isVibrating.set(true);
+
+        new Thread(() -> {
+            try {
+                vibrationModule.setvibrationInterval(intervalMs);
+                vibrationModule.vibrate();
+            } catch (Exception e) {
+                Thread.currentThread().interrupt(); // Restore interrupt status
+            } finally {
+                isVibrating.set(false); // Allow future vibrations
+            }
+        }).start();
     }
 
     /**
@@ -201,19 +222,24 @@ public class SpaceInvaderGame extends JPanel implements ActionListener, IODevice
                     }
                 }
 
-                //at this point we know where the ship is
-                float x1 = (float)-1*(alien.x-boardWidth)/(float)boardWidth;
-                float x2 = (float)-1*(ship.x-boardWidth)/(float)boardWidth;
-                float x = (x2-x1)*maxDistanceX;
+                // Normalize alien and ship positions to 0..1
+                float alienNormX = alien.x / (float)boardWidth;
+                float alienNormY = alien.y / (float)boardHeight;
+                float shipNormX  = ship.x  / (float)boardWidth;
+                float shipNormY  = ship.y  / (float)boardHeight;
 
-                float y1 = (float)-1*(alien.y-boardHeight)/(float)boardHeight;
-                float y2 = (float)-1*(ship.y-boardHeight)/(float)boardHeight;
-                float y = (y1-y2)*maxDistanceX;
+                // Convert to relative coordinates (alien - ship)
+                float relX = (alienNormX - shipNormX) * maxDistanceX;
+                float relY = (alienNormY - shipNormY) * maxDistanceX; // use separate scaling if needed
 
-                float[] pos1 = {x, y, refDistance}; // offset z to avoid artifacts
+                // Position in 3D space, z-axis gives depth
+                float[] pos1 = { relX, relY, refDistance };  // refDistance could be something like 1.0f
+
                 soundModule.playShipSound(pos1);
-                vibrationModule.setvibrationInterval((long)((x2-x1)* vibrationModule.maxInterval));
-                vibrationModule.vibrate();
+
+                // Run vibration in a separate thread
+                float duration = relX/maxDistanceX;
+                vibrateOnce((long)(duration* vibrationModule.maxInterval) );
 
                 if (alien.y >= ship.y) {
                     gameOver = true;

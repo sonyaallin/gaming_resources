@@ -42,13 +42,8 @@ public class SoundModule {
         if (loadALData() == AL.AL_FALSE) {
             System.exit(1);
         }
-        ;
 
         setListenerValues();
-    }
-
-    public void playShipSound() {
-        this.al.alSourcePlay(sources[SHIP]);
     }
 
     public void playShipSound(float[] pos1) {
@@ -121,12 +116,17 @@ public class SoundModule {
         // bind buffers into audio sources
         al.alGenSources(NUM_SOURCES, sources, 0);
 
+        al.alListenerfv(AL.AL_POSITION, listenerPos, 0);
+        al.alListenerfv(AL.AL_ORIENTATION, listenerOri, 0);
+
         al.alSourcei(sources[SHIP], AL.AL_BUFFER, buffers[SHIP]);
         al.alSourcef(sources[SHIP], AL.AL_PITCH, 1.0f);
         al.alSourcef(sources[SHIP], AL.AL_GAIN, 1.0f);
-        al.alSourcefv(sources[SHIP], AL.AL_POSITION, sourcePos[SHIP], 0);
-        al.alSourcefv(sources[SHIP], AL.AL_POSITION, sourceVel[SHIP], 0);
         al.alSourcei(sources[SHIP], AL.AL_LOOPING, AL.AL_TRUE);
+        al.alSourcef(sources[SHIP], AL.AL_REFERENCE_DISTANCE, 1.0f);
+        al.alSourcef(sources[SHIP], AL.AL_MAX_DISTANCE, 100.0f);
+        al.alSourcef(sources[SHIP], AL.AL_ROLLOFF_FACTOR, 1.0f);
+        al.alSourcePlay(sources[SHIP]);
 
         al.alSourcei(sources[BULLET], AL.AL_BUFFER, buffers[BULLET]);
         al.alSourcef(sources[BULLET], AL.AL_PITCH, 1.0f);
@@ -155,4 +155,7 @@ public class SoundModule {
         al.alListenerfv(AL.AL_VELOCITY, listenerVel, 0);
         al.alListenerfv(AL.AL_ORIENTATION, listenerOri, 0);
     }
+
+    public static void main(String args[] ) { }
+
 }
