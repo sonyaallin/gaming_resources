@@ -3,4 +3,5 @@
 *.xml
 .DS_Store
 .gitignore
+.json
 out/
